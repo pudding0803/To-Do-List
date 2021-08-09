@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="utf-8">
+        <title>Vue.JS</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+        <script src="https://kit.fontawesome.com/839194a8d6.js" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/vue@next"></script>
+        <style>
+            .cyan-btn {
+                color: #fff;
+                background-color: #0aa2c0;
+                border-color: #0aa2c0;
+            }
+            .cyan-btn:hover {
+                color: #fff;
+                background-color: #058ea8;
+            }
+            .cyan-btn:active:focus {
+                color: #fff;
+                background-color: #087990;
+                box-shadow: 0 0 0 0.25rem rgb(11 172 204 / 50%);
+            }
+            .cyan-btn:focus {
+                color: #fff;
+                background-color: #0689a2;
+                box-shadow: 0 0 0 0.25rem rgb(11 172 204 / 50%);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="m-5 p-5 border border-info border-3 rounded-3 col-7" id="app">
+            <div class="mb-4 ps-1 container row">
+                <div class="col-auto">
+                    <label for="new-item" class="form-label fs-4">新增物品</label>
+                </div>
+                <div class="col-7">
+                    <input type="text" class="form-control fs-5" id="new-item" v-model.lazy.trim="newItem" ref="newItem" @keyup.enter="addItem()">
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn cyan-btn" @click="addItem()"><i class="fas fa-plus me-2"></i>新增</button>
+                </div>
+            </div>
+            <div class="mb-4 ps-1 container">
+                <button type="button" class="btn cyan-btn me-3" @click="saveFile()"><i class="fas fa-save me-2"></i>儲存檔案</button>
+                <button type="button" class="btn cyan-btn" @click="loadFile()"><i class="fas fa-file-import me-2"></i>讀取檔案</button>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-center" v-for="i in items.length" :class="[i%2 ? colorBackground : '']">
+                    <span class="fs-5">{{ items[i-1] }}</span>
+                    <div>
+                        <button type="button" class="btn btn-danger me-3" @click="deleteItem(i-1)"><i class="fas fa-trash-alt me-2"></i>刪除</button>
+                        <div class="btn-group-vertical">
+                            <button type="button" class="btn btn-secondary btn-sm mb-2" :disabled="i === 1" @click="swapItems(i-1, i-2)"><i class="fas fa-angle-up"></i></button>
+                            <button type="button" class="btn btn-secondary btn-sm" :disabled="i === items.length" @click="swapItems(i-1, i)"><i class="fas fa-angle-down"></i></button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <input type="file" ref="uploadFile" accept=".json" @change="uploadFile($event)" hidden>
+        </div>
+        <script>
+            const vm = Vue.createApp({
+                data() {
+                    return {
+                        colorBackground: 'list-group-item-info',
+                        items: JSON.parse(window.localStorage.getItem('items'))
+                    }
+                },
+                methods: {
+                    addItem() {
+                        if (this.newItem) {
+                            this.items.push(this.newItem);
+                            this.newItem = '';
+                            this.$refs.newItem.focus();
+                        } else {
+                            alert('輸入內容不得為空');
+                        }
+                    },
+                    editItem(i, x) {
+                        this.editing = i;
+                    },
+                    deleteItem(i) {
+                        this.items.splice(i, 1);
+                    },
+                    swapItems(x, y) {
+                        [this.items[x], this.items[y]] = [this.items[y], this.items[x]];
+                    },
+                    saveFile() {
+                        const href = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.items))}`;
+                        const download = document.createElement('a');
+                        download.setAttribute('href', href);
+                        download.setAttribute('download', 'list.json');
+                        download.click();
+                    },
+                    loadFile() {
+                        this.$refs.uploadFile.click();
+                    },
+                    uploadFile(event) {
+                        const reader = new FileReader();
+                        reader.addEventListener('load', (e) => {
+                            this.items = JSON.parse(e.target.result);
+                        });
+                        reader.readAsText(event.target.files[0]);
+                    }
+                },
+                watch: {
+                    items: {
+                        handler(newValue) {
+                            window.localStorage.setItem('items', JSON.stringify(this.items));
+                        },
+                        deep: true
+                    }
+                }
+            }).mount('#app');
+        </script>
+    </body>
+</html>
