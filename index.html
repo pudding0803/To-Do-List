@@ -65,19 +65,10 @@
                 data() {
                     return {
                         colorBackground: 'list-group-item-info',
-                        items: JSON.parse(window.localStorage.getItem('items'))
+                        items: JSON.parse(window.localStorage.getItem('items')) ?? []
                     }
                 },
                 methods: {
-                    addItem() {
-                        if (this.newItem) {
-                            this.items.push(this.newItem);
-                            this.newItem = '';
-                            this.$refs.newItem.focus();
-                        } else {
-                            alert('輸入內容不得為空');
-                        }
-                    },
                     editItem(i, x) {
                         this.editing = i;
                     },
@@ -86,6 +77,24 @@
                     },
                     swapItems(x, y) {
                         [this.items[x], this.items[y]] = [this.items[y], this.items[x]];
+                    },
+                    uploadFile(event) {
+                        const reader = new FileReader();
+                        reader.addEventListener('load', (e) => {
+                            this.items = JSON.parse(e.target.result);
+                        });
+                        reader.readAsText(event.target.files[0]);
+                    }
+                },
+                computed: {
+                    addItem() {
+                        if (this.newItem) {
+                            this.items.push(this.newItem);
+                            this.newItem = '';
+                            this.$refs.newItem.focus();
+                        } else {
+                            alert('輸入內容不得為空');
+                        }
                     },
                     saveFile() {
                         const href = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.items))}`;
@@ -96,19 +105,12 @@
                     },
                     loadFile() {
                         this.$refs.uploadFile.click();
-                    },
-                    uploadFile(event) {
-                        const reader = new FileReader();
-                        reader.addEventListener('load', (e) => {
-                            this.items = JSON.parse(e.target.result);
-                        });
-                        reader.readAsText(event.target.files[0]);
                     }
                 },
                 watch: {
                     items: {
                         handler(newValue) {
-                            window.localStorage.setItem('items', JSON.stringify(this.items));
+                            window.localStorage.setItem('items', JSON.stringify(newValue));
                         },
                         deep: true
                     }
