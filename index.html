@@ -31,22 +31,23 @@
     </head>
     <body>
         <div class="m-5 p-5 border border-info border-3 rounded-3 col-7" id="app">
-            <div class="mb-4 ps-1 container row">
+            <div class="mx-4 mb-4 ps-1 container row">
                 <div class="col-auto">
                     <label for="new-item" class="form-label fs-4">新增物品</label>
                 </div>
                 <div class="col-7">
-                    <input type="text" class="form-control fs-5" id="new-item" v-model.lazy.trim="newItem" ref="newItem" @keyup.enter="addItem()">
+                    <input type="text" class="form-control fs-5" id="new-item" v-model.trim="newItem" ref="newItem" @keyup.enter="addItem()">
                 </div>
                 <div class="col-auto">
                     <button type="button" class="btn cyan-btn" @click="addItem()"><i class="fas fa-plus me-2"></i>新增</button>
                 </div>
             </div>
-            <div class="mb-4 ps-1 container">
+            <div class="mx-4 mb-4 ps-1 container">
                 <button type="button" class="btn cyan-btn me-3" @click="saveFile()"><i class="fas fa-save me-2"></i>儲存檔案</button>
                 <button type="button" class="btn cyan-btn" @click="loadFile()"><i class="fas fa-file-import me-2"></i>讀取檔案</button>
+                <input type="file" ref="uploadFile" accept=".json" @change="uploadFile($event)" hidden>
             </div>
-            <ul class="list-group list-group-flush">
+            <ul class="mx-4 list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between align-items-center" v-for="i in items.length" :class="[i%2 ? colorBackground : '']">
                     <span class="fs-5">{{ items[i-1] }}</span>
                     <div>
@@ -58,7 +59,6 @@
                     </div>
                 </li>
             </ul>
-            <input type="file" ref="uploadFile" accept=".json" @change="uploadFile($event)" hidden>
         </div>
         <script>
             const vm = Vue.createApp({
@@ -69,24 +69,6 @@
                     }
                 },
                 methods: {
-                    editItem(i, x) {
-                        this.editing = i;
-                    },
-                    deleteItem(i) {
-                        this.items.splice(i, 1);
-                    },
-                    swapItems(x, y) {
-                        [this.items[x], this.items[y]] = [this.items[y], this.items[x]];
-                    },
-                    uploadFile(event) {
-                        const reader = new FileReader();
-                        reader.addEventListener('load', (e) => {
-                            this.items = JSON.parse(e.target.result);
-                        });
-                        reader.readAsText(event.target.files[0]);
-                    }
-                },
-                computed: {
                     addItem() {
                         if (this.newItem) {
                             this.items.push(this.newItem);
@@ -95,6 +77,15 @@
                         } else {
                             alert('輸入內容不得為空');
                         }
+                    },
+                    editItem(i, x) {
+                        this.editing = i;
+                    },
+                    deleteItem(i) {
+                        this.items.splice(i, 1);
+                    },
+                    swapItems(x, y) {
+                        [this.items[x], this.items[y]] = [this.items[y], this.items[x]];
                     },
                     saveFile() {
                         const href = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(this.items))}`;
@@ -105,6 +96,13 @@
                     },
                     loadFile() {
                         this.$refs.uploadFile.click();
+                    },
+                    uploadFile(event) {
+                        const reader = new FileReader();
+                        reader.addEventListener('load', (e) => {
+                            this.items = JSON.parse(e.target.result);
+                        });
+                        reader.readAsText(event.target.files[0]);
                     }
                 },
                 watch: {
